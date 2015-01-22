@@ -8,20 +8,20 @@ import com.badlogic.gdx.graphics.Texture;
 public class Borde
 {
     Texture texture;
-    int x;
-    int y;
+    public int x;
+    public int y;
     int xOrigin;
     int yOrigin;
     int width;
     int height;
 
-    Borde()
+    public Borde()
     {
         this.xOrigin = 700;
         this.yOrigin = -256;
     }
 
-    Borde(int xOrigin, int yOrigin)
+    public Borde(int xOrigin, int yOrigin)
     {
         this.xOrigin = xOrigin;
         this.yOrigin = -yOrigin;
