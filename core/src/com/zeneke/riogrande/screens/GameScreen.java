@@ -8,13 +8,16 @@ import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.TimeUtils;
 import com.zeneke.riogrande.Borde;
+import com.zeneke.riogrande.utils.Constants;
 
 import java.util.Iterator;
 
@@ -66,6 +69,12 @@ public class GameScreen implements Screen
 
     private Texture bordeParaPintar;
 
+    private TextureAtlas rocaSpriteSheet;
+    private Array<Sprite> skeleton;
+    private float animationElapsed;
+    private float frameLength = 0.5f;
+    private int currentFrame = 0;
+
     @Override
     public void show()
     {
@@ -88,7 +97,7 @@ public class GameScreen implements Screen
         altoTronco = troncoImage.getHeight();
 
         camera = new OrthographicCamera();
-        camera.setToOrtho(false, 1024, 1024);
+        camera.setToOrtho(false, Constants.VIEWPORT_WIDTH, Constants.VIEWPORT_HEIGHT);
 
         batch = new SpriteBatch();
 
@@ -117,11 +126,29 @@ public class GameScreen implements Screen
         if (SOUND)
             rioMusic.play();
 
+        rocaSpriteSheet = new TextureAtlas("img/anim/roca.txt");
+
+
+        skeleton = rocaSpriteSheet.createSprites("roca_2");
+
+        //dont forget to set the size of your sprites!
+        for(int i=0; i<skeleton.size; i++){
+            skeleton.get(i).setSize(3.0f, 3.0f);
+        }
+
     }
 
     @Override
     public void render(float delta)
     {
+        //update la logica del skeletor
+        float dt = Gdx.graphics.getDeltaTime();
+        animationElapsed += dt;
+        while(animationElapsed > frameLength){
+            animationElapsed -= frameLength;
+            currentFrame = (currentFrame == skeleton.size - 1) ? 0 : ++currentFrame;
+        }
+
         Gdx.gl.glClearColor(0, 0, 0.2f, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         camera.update();
@@ -142,6 +169,7 @@ public class GameScreen implements Screen
         for(Borde borde: bordes_izquierda) {
             batch.draw(borde.getTexture(), borde.x, borde.y);
         }
+        batch.draw(skeleton.get(currentFrame),0,0);
         batch.end();
 
         if(Gdx.input.isTouched()) {

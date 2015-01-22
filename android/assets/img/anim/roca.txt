@@ -1,0 +1,53 @@
+roca.png
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+roca_2
+  rotate: false
+  xy: 2, 2
+  size: 254, 206
+  orig: 254, 206
+  offset: 0, 0
+  index: 2
+roca_2
+  rotate: false
+  xy: 258, 2
+  size: 254, 206
+  orig: 254, 206
+  offset: 0, 0
+  index: 1
+roca_2
+  rotate: false
+  xy: 514, 2
+  size: 254, 206
+  orig: 254, 206
+  offset: 0, 0
+  index: 2
+roca_2
+  rotate: false
+  xy: 770, 2
+  size: 254, 206
+  orig: 254, 206
+  offset: 0, 0
+  index: 3
+roca_2
+  rotate: false
+  xy: 1026, 2
+  size: 254, 202
+  orig: 254, 202
+  offset: 0, 0
+  index: 4
+roca_2
+  rotate: false
+  xy: 1282, 2
+  size: 254, 202
+  orig: 254, 202
+  offset: 0, 0
+  index: 5
+roca_2
+  rotate: false
+  xy: 1538, 2
+  size: 254, 196
+  orig: 254, 196
+  offset: 0, 0
+  index: 6
