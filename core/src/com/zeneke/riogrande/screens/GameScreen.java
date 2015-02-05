@@ -16,6 +16,9 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.TimeUtils;
+import com.badlogic.gdx.utils.viewport.FillViewport;
+import com.badlogic.gdx.utils.viewport.FitViewport;
+import com.badlogic.gdx.utils.viewport.Viewport;
 import com.zeneke.riogrande.Borde;
 import com.zeneke.riogrande.utils.Constants;
 
@@ -29,6 +32,8 @@ public class GameScreen implements Screen
     private Texture piedraImage;
     private Texture barcaImage;
     private Texture fondoRioImage;
+    private Texture game_bg;
+    private Texture menu_bg;
     private Texture troncoImage;
     private Texture troncoImageFA;
     private Texture borde1Image;
@@ -36,7 +41,8 @@ public class GameScreen implements Screen
     private Texture borde3Image;
     private Texture borde4Image;
     private Texture bordeLeftImage;
-    private OrthographicCamera camera;
+    private OrthographicCamera cameraGame;
+    private OrthographicCamera cameraHUD;
     private SpriteBatch batch;
     private Rectangle barca;
     private Sound piedraSound;
@@ -59,9 +65,6 @@ public class GameScreen implements Screen
 
     private Array<Borde> bordes_izquierda;
 
-    public int rio_ancho = 700;
-    public int rio_alto = 1024;
-
     private int bob_max = 30;
     private int bob_min = -30;
     private int bob_pos = 0;
@@ -74,6 +77,8 @@ public class GameScreen implements Screen
     private float animationElapsed;
     private float frameLength = 0.5f;
     private int currentFrame = 0;
+
+    private Viewport viewport;
 
     @Override
     public void show()
@@ -96,16 +101,22 @@ public class GameScreen implements Screen
         anchoTronco = troncoImage.getWidth();
         altoTronco = troncoImage.getHeight();
 
-        camera = new OrthographicCamera();
-        camera.setToOrtho(false, Constants.VIEWPORT_WIDTH, Constants.VIEWPORT_HEIGHT);
+        cameraGame = new OrthographicCamera();
+        cameraGame.position.x = Constants.VIEWPORT_WIDTH * 0.5f;
+        cameraGame.position.y = Constants.VIEWPORT_HEIGHT * 0.5f;
+
+        viewport = new FillViewport(Constants.VIEWPORT_WIDTH, Constants.VIEWPORT_HEIGHT, cameraGame);
+
+
+       //cameraGame.setToOrtho(false, Constants.VIEWPORT_WIDTH, Constants.VIEWPORT_HEIGHT);
 
         batch = new SpriteBatch();
 
         barca = new Rectangle();
-        barca.x = rio_ancho / 2 - 64 / 2;
-        barca.y = rio_alto - 200;
-        barca.width = 64;
-        barca.height = 64;
+        barca.x = Constants.LEVEL_WIDTH / 2;
+        barca.y = 800;
+        //barca.width = 64;
+        //barca.height = 64;
         barca.setSize(64,64);
 
         piedras = new Array<Rectangle>();
@@ -132,8 +143,9 @@ public class GameScreen implements Screen
         skeleton = rocaSpriteSheet.createSprites("roca_2");
 
         //dont forget to set the size of your sprites!
-        for(int i=0; i<skeleton.size; i++){
-            skeleton.get(i).setSize(3.0f, 3.0f);
+        for(int i=0; i<skeleton.size; i++)
+        {
+            skeleton.get(i).setSize(1.0f, 1.0f);
         }
 
     }
@@ -144,49 +156,59 @@ public class GameScreen implements Screen
         //update la logica del skeletor
         float dt = Gdx.graphics.getDeltaTime();
         animationElapsed += dt;
-        while(animationElapsed > frameLength){
+        while(animationElapsed > frameLength)
+        {
             animationElapsed -= frameLength;
             currentFrame = (currentFrame == skeleton.size - 1) ? 0 : ++currentFrame;
         }
 
         Gdx.gl.glClearColor(0, 0, 0.2f, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-        camera.update();
-        batch.setProjectionMatrix(camera.combined);
+        cameraGame.update();
+        Gdx.gl.glViewport(0,0 ,Gdx.graphics.getWidth(),Gdx.graphics.getHeight());
+        batch.setProjectionMatrix(cameraGame.combined);
         batch.begin();
-        batch.draw(fondoRioImage, 0, 0);
+        batch.draw(fondoRioImage, 0.0f, 0.0f);
         batch.draw(barcaImage, barca.x, barca.y, barca.getWidth(), barca.getHeight());
-        for(Rectangle piedra: piedras) {
+        for(Rectangle piedra: piedras)
+        {
             batch.draw(piedraImage, piedra.x, piedra.y);
         }
         for(Rectangle tronco: troncos)
         {
             batch.draw(troncoImage, tronco.x, tronco.y);
         }
-        for(Borde borde: bordes_derecha) {
+        for(Borde borde: bordes_derecha)
+        {
             batch.draw(borde.getTexture(), borde.x, borde.y);
         }
-        for(Borde borde: bordes_izquierda) {
+        for(Borde borde: bordes_izquierda)
+        {
             batch.draw(borde.getTexture(), borde.x, borde.y);
         }
         batch.draw(skeleton.get(currentFrame),0,0);
         batch.end();
 
-        if(Gdx.input.isTouched()) {
+
+
+        if(Gdx.input.isTouched())
+        {
             Vector3 touchPos = new Vector3();
             touchPos.set(Gdx.input.getX(), Gdx.input.getY(), 0);
-            camera.unproject(touchPos);
+            cameraGame.unproject(touchPos);
             barca.x = touchPos.x - 64 / 2;
         }
 
-        if(Gdx.input.isKeyPressed(Input.Keys.LEFT)) barca.x -= 200 * Gdx.graphics.getDeltaTime();
-        if(Gdx.input.isKeyPressed(Input.Keys.RIGHT)) barca.x += 200 * Gdx.graphics.getDeltaTime();
+        if(Gdx.input.isKeyPressed(Input.Keys.LEFT))
+            barca.x -= 200 * Gdx.graphics.getDeltaTime();
+        if(Gdx.input.isKeyPressed(Input.Keys.RIGHT))
+            barca.x += 200 * Gdx.graphics.getDeltaTime();
 
         if(barca.x < 0)
             barca.x = 0;
-        if(barca.x > rio_ancho - barca.getWidth())
+        if(barca.x > Constants.LEVEL_WIDTH - barca.getWidth())
         {
-            barca.x = rio_ancho - barca.getWidth();
+            barca.x = Constants.LEVEL_WIDTH - barca.getWidth();
         }
 
         if(TimeUtils.nanoTime()/1000000 - lastPiedraTime > 3000)
@@ -275,6 +297,7 @@ public class GameScreen implements Screen
     @Override
     public void resize(int width, int height)
     {
+        viewport.update(width, height);
 
     }
 
@@ -304,7 +327,7 @@ public class GameScreen implements Screen
 
     private void spawnPiedra() {
         Rectangle piedra = new Rectangle();
-        piedra.x = MathUtils.random(0, rio_ancho - 128);
+        piedra.x = MathUtils.random(0, Constants.LEVEL_WIDTH - 128);
         piedra.y = 0;
         piedra.width = anchoPiedra;
         piedra.height = altoPiedra;
@@ -314,7 +337,7 @@ public class GameScreen implements Screen
 
     private void spawnTronco() {
         Rectangle tronco = new Rectangle();
-        tronco.x = MathUtils.random(0, rio_ancho - 128);
+        tronco.x = MathUtils.random(0, Constants.LEVEL_WIDTH - 128);
         tronco.y = 0;
         tronco.width = anchoTronco;
         tronco.height = altoTronco;
